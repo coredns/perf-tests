@@ -49,9 +49,7 @@ data:
     .:53 {
         health
         prometheus :9153
-        kubernetes CLUSTER_DOMAIN {
-          cidrs SERVICE_CIDR
-        }
+        kubernetes CLUSTER_DOMAIN SERVICE_CIDR
     }
 ---
 apiVersion: extensions/v1beta1
