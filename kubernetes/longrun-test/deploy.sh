@@ -113,16 +113,7 @@ EOF
 
 function install_kubernetes
 {
-    # Download K8s DinD.
     git clone https://github.com/kubernetes-sigs/kubeadm-dind-cluster.git ~/dind
-
-    # Set up the Kubernetes Repo and build.
-    mkdir -p /usr/go/{src/k8s.io,pkg,bin}
-    cd /usr/go/src/k8s.io/
-    go get -d k8s.io/kubernetes
-
-    export GOPATH=/usr/go/
-    export PATH=$PATH:/usr/local/go/bin
 
     # Bring up the Kubernetes v1.13 cluster.
     ~/dind/fixed/dind-cluster-v1.13.sh up
@@ -154,7 +145,6 @@ function install_prometheus
     kubectl -n kube-system patch svc prom-prometheus-operator-coredns -p '{"spec": {"selector": {"k8s-app": "kube-dns"}}}'
 
     HOSTIP=$(hostname -I | awk '{print $1;}')
-    kubectl proxy --address ${HOSTIP} --accept-hosts='^.*$'
 
 }
 
