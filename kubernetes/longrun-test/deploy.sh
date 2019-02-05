@@ -43,7 +43,7 @@ function install_all
     install_docker
     install_k8s_tools
     install_kubernetes
-    install_prometheus
+    install_prometheus_operator
 }
 
 
@@ -87,7 +87,7 @@ function install_docker
          stable"
 
     sudo apt-get update > /dev/null
-    sudo apt-get install -y docker-ce
+    sudo apt-get install -y docker-ce > /dev/null
 
 }
 
@@ -120,7 +120,7 @@ function install_kubernetes
 
 }
 
-function install_prometheus
+function install_prometheus_operator
 {
     cd
     # Install Ingress
@@ -131,12 +131,13 @@ function install_prometheus
     # Install Tiller
     kubectl -n kube-system create sa tiller
     kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-    helm init --service-account tiller --upgrade
 
     # Install Helm.
     curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > get_helm.sh
     chmod 700 get_helm.sh
     ./get_helm.sh
+    helm init
+    sleep 5s
 
     # Install the Prometheus Operator
     helm install --name prom --namespace monitoring stable/prometheus-operator
@@ -145,6 +146,7 @@ function install_prometheus
     kubectl -n kube-system patch svc prom-prometheus-operator-coredns -p '{"spec": {"selector": {"k8s-app": "kube-dns"}}}'
 
     HOSTIP=$(hostname -I | awk '{print $1;}')
+    kubectl proxy --address ${HOSTIP} --accept-hosts='^.*$'
 
 }
 
@@ -173,7 +175,7 @@ while getopts "?agdtkm" opt; do
         install_kubernetes
         ;;
     m)
-        install_prometheus
+        install_prometheus_operator
         ;;
     esac
 done
